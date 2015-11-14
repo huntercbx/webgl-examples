@@ -1,0 +1,36 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset='UTF-8'>
+  <title>WebGL Initialization</title>
+  <link rel="stylesheet" type="text/css" href="../styles/style.css">
+</head>
+
+<body>
+  <canvas id='canvas'></canvas>
+
+  <!-- Main program -->
+  <script type='text/javascript'>
+
+    // Return WebGL context
+    function getGLContext(id) {
+      var canvas = document.getElementById(id);
+      var gl = canvas.getContext('webgl') ||
+               canvas.getContext('experimental-webgl');
+      return gl;
+    }
+
+    // Get WebGL context
+    var gl = getGLContext('canvas');
+    if (!gl)
+      alert('WebGL is not supported by your browser');
+    else { // WebGL is supported
+
+      // Clear context (fill background with yelow color)
+      gl.clearColor(1.0, 1.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    }
+  </script>
+
+</body>
+</html>
