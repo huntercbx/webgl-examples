@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset='UTF-8'>
-  <title>Two triangles</title>
+  <title>Circle</title>
   <link rel="stylesheet" type="text/css" href="../styles/style.css">
   <script src="../scripts/webgl-utils.js"></script>
 </head>
@@ -36,26 +36,26 @@
   <script type='text/javascript'>
 
     // Vertices position array
-    var vertices = [
-      -0.5,  0.5,
-       0.5, -0.5,
-      -0.5, -0.5,
-
-      -0.5,  0.5,
-       0.5,  0.5,
-       0.5, -0.5
-    ];
+    var vertices = [];
 
     // Vertices color array
-    var colors = [
-      1.0, 0.0, 0.0, 1.0,
-      1.0, 0.0, 0.0, 1.0,
-      1.0, 0.0, 0.0, 1.0,
+    var colors = [];
 
-      0.0, 1.0, 0.0, 1.0,
-      0.0, 1.0, 0.0, 1.0,
-      0.0, 1.0, 0.0, 1.0
-    ];
+    var N = 16;
+    var R = 0.5;
+    var step = Math.PI * 2 / N;
+    for (var i = 0; i < 16; ++i) {
+      var alpha = step * i;
+      var beta = step * (i + 1);
+
+      vertices.push(0.0, 0.0);
+      vertices.push(R * Math.cos(alpha), R * Math.sin(alpha));
+      vertices.push(R * Math.cos(beta),  R * Math.sin(beta));
+
+      colors.push(1.0, 0.0, 0.0, 1.0);
+      colors.push(1.0, 0.0, 0.0, 1.0);
+      colors.push(1.0, 0.0, 0.0, 1.0);
+    }
 
     // Return WebGL context
     function getGLContext(id) {
@@ -111,7 +111,13 @@
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       // Draw triangles
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      var nVertices = vertices.length / 2;
+      var nColors = colors.length / 4;
+      if (nVertices !== nColors) {
+        alert('Number of vertices and colors should match!');
+      } else {
+        gl.drawArrays(gl.TRIANGLES, 0, nVertices);
+      }
     }
   </script>
 

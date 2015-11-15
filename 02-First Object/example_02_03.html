@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset='UTF-8'>
-  <title>Two triangles</title>
+  <title>Gradient triangle</title>
   <link rel="stylesheet" type="text/css" href="../styles/style.css">
   <script src="../scripts/webgl-utils.js"></script>
 </head>
@@ -37,24 +37,16 @@
 
     // Vertices position array
     var vertices = [
-      -0.5,  0.5,
+       0.0,  0.5,
        0.5, -0.5,
-      -0.5, -0.5,
-
-      -0.5,  0.5,
-       0.5,  0.5,
-       0.5, -0.5
+      -0.5, -0.5
     ];
 
     // Vertices color array
     var colors = [
       1.0, 0.0, 0.0, 1.0,
-      1.0, 0.0, 0.0, 1.0,
-      1.0, 0.0, 0.0, 1.0,
-
       0.0, 1.0, 0.0, 1.0,
-      0.0, 1.0, 0.0, 1.0,
-      0.0, 1.0, 0.0, 1.0
+      0.0, 0.0, 1.0, 1.0
     ];
 
     // Return WebGL context
@@ -111,7 +103,7 @@
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       // Draw triangles
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
   </script>
 
