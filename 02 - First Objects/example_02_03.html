@@ -89,6 +89,7 @@
     function initWebGL(gl) {
       var program = initShaders(gl);
       initBuffers(gl, program);
+      return program;
     }
 
     // Get WebGL context
