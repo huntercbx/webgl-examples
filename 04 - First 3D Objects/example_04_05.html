@@ -1,0 +1,157 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Visualize Z-buffer data - Torus</title>
+  <link rel="stylesheet" type="text/css" href="../styles/style.css">
+  <script src="../scripts/webgl-utils.js"></script>
+  <script src="../scripts/webgl-3d-math.js"></script>
+</head>
+
+<body>
+  <canvas id="canvas" width="640" height="480"></canvas>
+
+  <!-- Vertex shader -->
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec3  a_position;
+    varying   vec4  v_color;
+    uniform   mat4  u_matrix;
+
+    void main() {
+      vec4 pos = u_matrix * vec4(a_position.xyz, 1.0);
+      float c = (1.0 - pos.z) / 2.0;
+      v_color = vec4(c, c, c, 1.0);
+      gl_Position = pos;
+    }
+  </script>
+
+  <!-- Fragment shader -->
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    varying   vec4 v_color;
+
+    void main() {
+       gl_FragColor = v_color;
+    }
+  </script>
+
+  <!-- Main program -->
+  <script type="text/javascript">
+
+    // Vertices position array
+    var vertices = [];
+
+    var N1 = 32;
+    var N2 = 32;
+    var R1 = 0.6;
+    var R2 = 0.25;
+
+    var step1 = Math.PI * 2 / N1;
+    var step2 = Math.PI * 2 / N2;
+
+    for (var i = 0; i < N1; ++i) {
+      for (var j = 0; j < N2; ++j) {
+        var alpha = step2 * j;
+        var beta  = step2 * (j + 1);
+
+        var v1 = [R1 + R2 * Math.cos(alpha), R2 * Math.sin(alpha), 0];
+        var v2 = [R1 + R2 * Math.cos(beta),  R2 * Math.sin(beta),  0];
+
+        var cos1 = Math.cos(step1 * i);
+        var sin1 = Math.sin(step1 * i);
+        var cos2 = Math.cos(step1 * (i + 1));
+        var sin2 = Math.sin(step1 * (i + 1));
+
+        vertices.push(
+          v1[0] * cos1 + v1[2] * sin1,
+          v1[1],
+          v1[2] * cos1 - v1[0] * sin1);
+
+        vertices.push(
+          v1[0] * cos2 + v1[2] * sin2,
+          v1[1],
+          v1[2] * cos2 - v1[0] * sin2);
+
+        vertices.push(
+          v2[0] * cos1 + v2[2] * sin1,
+          v2[1],
+          v2[2] * cos1 - v2[0] * sin1);
+
+        vertices.push(
+          v1[0] * cos2 + v1[2] * sin2,
+          v1[1],
+          v1[2] * cos2 - v1[0] * sin2);
+
+        vertices.push(
+          v2[0] * cos2 + v2[2] * sin2,
+          v2[1],
+          v2[2] * cos2 - v2[0] * sin2);
+
+        vertices.push(
+          v2[0] * cos1 + v2[2] * sin1,
+          v2[1],
+          v2[2] * cos1 - v2[0] * sin1);
+      }
+    }
+
+    // Return WebGL context
+    function getGLContext(id) {
+      var canvas = document.getElementById(id);
+      var gl = canvas.getContext('webgl') ||
+               canvas.getContext('experimental-webgl');
+      return gl;
+    }
+
+    // Initialize shaders
+    function initShaders(gl) {
+      var program = createProgramFromScripts(gl, ['vertex-shader', 'fragment-shader']);
+      gl.useProgram(program);
+      return program;
+    }
+
+    // Initialize buffers
+    function initBuffers(gl, program) {
+      // get location of 'a_position' attrubute
+      var positionLocation = gl.getAttribLocation(program, 'a_position');
+
+      // Create vertices buffer
+      var positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, gl.FALSE, 0, 0);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    }
+
+    // Initialize WebGL
+    function initWebGL(gl) {
+      var program = initShaders(gl);
+      initBuffers(gl, program);
+      gl.enable(gl.DEPTH_TEST);
+      return program;
+    }
+
+    // Get WebGL context
+    var gl = getGLContext('canvas');
+    if (!gl)
+      alert('WebGL is not supported by your browser');
+    else { // WebGL is supported
+      var program = initWebGL(gl);
+
+      // Clear context (fill background with yelow color)
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      // Set transformation matrix
+      var matrix = makeXRotation(-Math.PI / 6);
+
+      var matrixLocation = gl.getUniformLocation(program, 'u_matrix');
+      gl.uniformMatrix4fv(matrixLocation, gl.FALSE, matrix);
+
+      // Draw triangles
+      var nVertices = vertices.length / 3;
+      gl.drawArrays(gl.TRIANGLES, 0, nVertices);
+    }
+  </script>
+
+</body>
+</html>
