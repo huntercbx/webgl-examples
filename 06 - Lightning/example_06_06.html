@@ -1,0 +1,197 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Lighting - Single Light Source</title>
+  <link rel="stylesheet" type="text/css" href="../styles/style.css">
+  <script src="../scripts/webgl-utils.js"></script>
+  <script src="../scripts/webgl-3d-math.js"></script>
+</head>
+
+<body>
+  <canvas id="canvas" width="640" height="480"></canvas>
+
+  <!-- Vertex shader -->
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec3 a_position;
+    attribute vec3 a_normal;
+
+    uniform mat4 u_matrix;
+    uniform mat4 u_n_matrix;
+
+    uniform vec3  u_ambient_color;
+    uniform vec3  u_diffuse_color;
+    uniform vec3  u_specular_color;
+    uniform vec3  u_lighting_pos;
+    uniform float u_shininess;
+
+    varying vec3 v_light_weight;
+
+    void main() {
+      vec4 position = u_matrix * vec4(a_position.xyz, 1.0);
+      gl_Position = position;
+
+      vec4 normal = u_n_matrix * vec4(a_normal, 0.0);
+      vec3 lightDirection = normalize(u_lighting_pos - position.xyz);
+
+      float diffuseWeight = max(dot(normal.xyz, lightDirection), 0.0);
+
+      vec3 reflectionDirection = reflect(lightDirection, normal.xyz);
+      vec3 eyeDirection = normalize(-position.xyz);
+      float specularWeight = max(dot(eyeDirection, reflectionDirection), 0.0);
+      specularWeight = pow(specularWeight, u_shininess);
+
+      v_light_weight = u_ambient_color +
+        u_diffuse_color * diffuseWeight +
+        u_specular_color * specularWeight;
+    }
+  </script>
+
+  <!-- Fragment shader -->
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    varying vec3 v_light_weight;
+
+    void main() {
+      vec4 color = vec4(1.0, 1.0, 0.0, 1.0);
+      gl_FragColor = vec4(color.rgb * v_light_weight, color.a);
+    }
+  </script>
+
+  <!-- Main program -->
+  <script type="text/javascript">
+
+    // Vertices position array
+    var vertices = [];
+
+    // Vertices normals array
+    var normals = [];
+
+    var N1 = 32;
+    var N2 = 32;
+    var R1 = 0.6;
+    var R2 = 0.25;
+
+    var step1 = Math.PI * 2 / N1;
+    var step2 = Math.PI * 2 / N2;
+
+    for (var i = 0; i < N1; ++i) {
+      for (var j = 0; j < N2; ++j) {
+        var alpha = step2 * j;
+        var beta  = step2 * (j + 1);
+
+        var cos_a = Math.cos(alpha);
+        var sin_a = Math.sin(alpha);
+        var cos_b = Math.cos(beta);
+        var sin_b = Math.sin(beta);
+
+        var v1 = [R1 + R2 * cos_a, R2 * sin_a, 0];
+        var v2 = [R1 + R2 * cos_b, R2 * sin_b, 0];
+
+        var cos1 = Math.cos(step1 * i);
+        var sin1 = Math.sin(step1 * i);
+        var cos2 = Math.cos(step1 * (i + 1));
+        var sin2 = Math.sin(step1 * (i + 1));;
+
+        vertices.push(v1[0] * cos1, v1[1], -v1[0] * sin1);
+        vertices.push(v1[0] * cos2, v1[1], -v1[0] * sin2);
+        vertices.push(v2[0] * cos1, v2[1], -v2[0] * sin1);
+        vertices.push(v1[0] * cos2, v1[1], -v1[0] * sin2);
+        vertices.push(v2[0] * cos2, v2[1], -v2[0] * sin2);
+        vertices.push(v2[0] * cos1, v2[1], -v2[0] * sin1);
+
+        normals.push(cos_a * cos1, sin_a, -cos_a * sin1);
+        normals.push(cos_a * cos2, sin_a, -cos_a * sin2);
+        normals.push(cos_b * cos1, sin_b, -cos_b * sin1);
+        normals.push(cos_a * cos2, sin_a, -cos_a * sin2);
+        normals.push(cos_b * cos2, sin_b, -cos_b * sin2);
+        normals.push(cos_b * cos1, sin_b, -cos_b * sin1);
+      }
+    }
+
+    // Return WebGL context
+    function getGLContext(id) {
+      var canvas = document.getElementById(id);
+      var gl = canvas.getContext('webgl') ||
+               canvas.getContext('experimental-webgl');
+      return gl;
+    }
+
+    // Initialize shaders
+    function initShaders(gl) {
+      var program = createProgramFromScripts(gl, ['vertex-shader', 'fragment-shader']);
+      gl.useProgram(program);
+      return program;
+    }
+
+    // Initialize buffers
+    function initBuffers(gl, program) {
+      // get location of 'a_position' attrubute
+      var positionLocation = gl.getAttribLocation(program, 'a_position');
+
+      // Create vertices buffer
+      var positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, gl.FALSE, 0, 0);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+      // get location of 'a_normal' attrubute
+      var normalLocation = gl.getAttribLocation(program, "a_normal");
+
+      // Create normals buffer
+      var normalBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+      gl.enableVertexAttribArray(normalLocation);
+      gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, gl.FALSE, 0, 0);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+    }
+
+    // Initialize WebGL
+    function initWebGL(gl) {
+      var program = initShaders(gl);
+      initBuffers(gl, program);
+      gl.enable(gl.DEPTH_TEST);
+      return program;
+    }
+
+    // Get WebGL context
+    var gl = getGLContext('canvas');
+    if (!gl)
+      alert('WebGL is not supported by your browser');
+    else { // WebGL is supported
+      var program = initWebGL(gl);
+
+      // Clear context (fill background with yelow color)
+      gl.clearColor(1.0, 1.0, 1.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      // Set transformation matrix
+      var matrix = makeXRotation(-Math.PI / 4);
+      gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_matrix'), gl.FALSE, matrix);
+
+      // Set normal matrix
+      var normalMatrix = makeInverse(matrix);
+      normalMatrix = makeTranspose(normalMatrix);
+      gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_n_matrix'), gl.FALSE, normalMatrix);
+
+      // Set lighting parameters
+      gl.uniform3f(gl.getUniformLocation(program, 'u_lighting_pos'),   0.3, 0.3, 0.0);
+      gl.uniform3f(gl.getUniformLocation(program, 'u_ambient_color'),  0.2, 0.2, 0.2);
+      gl.uniform3f(gl.getUniformLocation(program, 'u_diffuse_color'),  0.6, 0.6, 0.6);
+      gl.uniform3f(gl.getUniformLocation(program, 'u_specular_color'), 1.0, 1.0, 1.0);
+      gl.uniform1f(gl.getUniformLocation(program, 'u_shininess'), 6.0);
+
+      // Draw triangles
+      var nVertices = vertices.length / 3;
+      var nNormals  = normals.length / 3;
+      if (nVertices !== nNormals) {
+        alert('Number of vertices and normals should match!');
+      } else {
+        gl.drawArrays(gl.TRIANGLES, 0, nVertices);
+      }
+    }
+  </script>
+
+</body>
+</html>
