@@ -44,8 +44,8 @@
     // Vertices position array
     var vertices = [];
 
-    var N1 = 32;
-    var N2 = 32;
+    var N1 = 16;
+    var N2 = 16;
     var R1 = 0.6;
     var R2 = 0.25;
 
@@ -65,35 +65,12 @@
         var cos2 = Math.cos(step1 * (i + 1));
         var sin2 = Math.sin(step1 * (i + 1));
 
-        vertices.push(
-          v1[0] * cos1 + v1[2] * sin1,
-          v1[1],
-          v1[2] * cos1 - v1[0] * sin1);
-
-        vertices.push(
-          v1[0] * cos2 + v1[2] * sin2,
-          v1[1],
-          v1[2] * cos2 - v1[0] * sin2);
-
-        vertices.push(
-          v2[0] * cos1 + v2[2] * sin1,
-          v2[1],
-          v2[2] * cos1 - v2[0] * sin1);
-
-        vertices.push(
-          v1[0] * cos2 + v1[2] * sin2,
-          v1[1],
-          v1[2] * cos2 - v1[0] * sin2);
-
-        vertices.push(
-          v2[0] * cos2 + v2[2] * sin2,
-          v2[1],
-          v2[2] * cos2 - v2[0] * sin2);
-
-        vertices.push(
-          v2[0] * cos1 + v2[2] * sin1,
-          v2[1],
-          v2[2] * cos1 - v2[0] * sin1);
+        vertices.push(v1[0] * cos1, v1[1], -v1[0] * sin1);
+        vertices.push(v1[0] * cos2, v1[1], -v1[0] * sin2);
+        vertices.push(v2[0] * cos1, v2[1], -v2[0] * sin1);
+        vertices.push(v1[0] * cos2, v1[1], -v1[0] * sin2);
+        vertices.push(v2[0] * cos2, v2[1], -v2[0] * sin2);
+        vertices.push(v2[0] * cos1, v2[1], -v2[0] * sin1);
       }
     }
 
