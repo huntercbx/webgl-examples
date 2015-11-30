@@ -229,13 +229,12 @@
     else { // WebGL is supported
       var program = initWebGL(gl);
 
-      var alpha = 0;
       var start = null;
 
       function drawScene(timestamp) {
         if (!start) start = timestamp;
-        var progress = timestamp - start;
-        var alpha = Math.PI / 2 * (progress / 1000.0);
+        var elapsedSeconds = (timestamp - start) / 1000.0;
+        var alpha = Math.PI / 2 * elapsedSeconds;
 
         // Clear context (fill background with yelow color)
         gl.clearColor(1.0, 1.0, 1.0, 1.0);

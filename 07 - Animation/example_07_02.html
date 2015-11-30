@@ -162,13 +162,12 @@
     else { // WebGL is supported
       var program = initWebGL(gl);
 
-      var alpha = 0;
       var start = null;
 
       function drawScene(timestamp) {
         if (!start) start = timestamp;
-        var progress = timestamp - start;
-        var alpha = Math.PI / 2 * (progress / 1000.0);
+        var elapsedSeconds = (timestamp - start) / 1000.0;
+        var alpha = Math.PI / 2  * elapsedSeconds;
 
         // Clear context (fill background with yelow color)
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -184,10 +183,11 @@
         gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_n_matrix'), gl.FALSE, normalMatrix);
 
         // Set lighting parameters
-        var light_pos = [0.6 + 0.6 * Math.cos(alpha), 0.6 * Math.sin(alpha), 0.0, 1.0];
+        var light_pos = [R1 + R1 * Math.cos(alpha), R1 * Math.sin(alpha), 0.0, 1.0];
         light_pos = matrixVectorMultiply(light_pos, makeYRotation(Math.PI / 4));
-        gl.uniform4fv(gl.getUniformLocation(program, 'u_lighting_pos'),  light_pos);
+        light_pos = matrixVectorMultiply(light_pos, matrix);
 
+        gl.uniform4fv(gl.getUniformLocation(program, 'u_lighting_pos'),  light_pos);
         gl.uniform3f(gl.getUniformLocation(program, 'u_ambient_color'),  0.2, 0.2, 0.2);
         gl.uniform3f(gl.getUniformLocation(program, 'u_diffuse_color'),  0.6, 0.6, 0.6);
         gl.uniform3f(gl.getUniformLocation(program, 'u_specular_color'), 1.0, 1.0, 1.0);
