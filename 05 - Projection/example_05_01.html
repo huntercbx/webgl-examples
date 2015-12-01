@@ -1,0 +1,245 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Enable Z-buffer</title>
+  <link rel="stylesheet" type="text/css" href="../styles/style.css">
+  <script src="../scripts/webgl-utils.js"></script>
+  <script src="../scripts/webgl-3d-math.js"></script>
+</head>
+
+<body>
+  <canvas id="canvas" width="640" height="480"></canvas>
+
+  <!-- Vertex shader -->
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec3  a_position;
+    attribute vec4  a_color;
+    varying   vec4  v_color;
+    uniform   mat4  u_matrix;
+
+    void main() {
+      v_color = a_color;
+      vec4 pos = vec4(a_position.xy,a_position.z, 1.0);
+      vec4 res = u_matrix * pos;
+      gl_Position = vec4(res.xy,res.z,res.w);
+    }
+  </script>
+
+  <!-- Fragment shader -->
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    varying   vec4 v_color;
+
+    void main() {
+       gl_FragColor = v_color;
+    }
+  </script>
+
+  <!-- Main program -->
+  <script type="text/javascript">
+
+    // Vertices position array
+    var vertices = [
+      // Front face
+       0.5,  0.5, -0.5,
+      -0.5, -0.5, -0.5,
+      -0.5,  0.5, -0.5,
+
+       0.5,  0.5, -0.5,
+       0.5, -0.5, -0.5,
+      -0.5, -0.5, -0.5,
+
+      // Back face
+       0.5,  0.5,  0.5,
+      -0.5,  0.5,  0.5,
+      -0.5, -0.5,  0.5,
+
+       0.5,  0.5,  0.5,
+      -0.5, -0.5,  0.5,
+       0.5, -0.5,  0.5,
+
+      // Top face
+       0.5,  0.5, -0.5,
+      -0.5,  0.5, -0.5,
+       0.5,  0.5,  0.5,
+
+       0.5,  0.5,  0.5,
+      -0.5,  0.5, -0.5,
+      -0.5,  0.5,  0.5,
+
+      // Bottom face
+       0.5, -0.5, -0.5,
+       0.5, -0.5,  0.5,
+      -0.5, -0.5, -0.5,
+
+       0.5, -0.5,  0.5,
+      -0.5, -0.5,  0.5,
+      -0.5, -0.5, -0.5,
+
+      // Right face
+       0.5,  0.5,  0.5,
+       0.5, -0.5,  0.5,
+       0.5, -0.5, -0.5,
+
+       0.5,  0.5,  0.5,
+       0.5, -0.5, -0.5,
+       0.5,  0.5, -0.5,
+
+      // Left face
+      -0.5,  0.5,  0.5,
+      -0.5, -0.5, -0.5,
+      -0.5, -0.5,  0.5,
+
+      -0.5,  0.5,  0.5,
+      -0.5,  0.5, -0.5,
+      -0.5, -0.5, -0.5
+    ];
+
+    // Vertices color array
+    var colors = [
+      // Front face
+      1.0, 0.0, 0.0, 1.0,
+      1.0, 0.0, 0.0, 1.0,
+      1.0, 0.0, 0.0, 1.0,
+      1.0, 0.0, 0.0, 1.0,
+      1.0, 0.0, 0.0, 1.0,
+      1.0, 0.0, 0.0, 1.0,
+
+      // Back face
+      1.0, 1.0, 0.0, 1.0,
+      1.0, 1.0, 0.0, 1.0,
+      1.0, 1.0, 0.0, 1.0,
+      1.0, 1.0, 0.0, 1.0,
+      1.0, 1.0, 0.0, 1.0,
+      1.0, 1.0, 0.0, 1.0,
+
+      // Top face
+      0.0, 1.0, 0.0, 1.0,
+      0.0, 1.0, 0.0, 1.0,
+      0.0, 1.0, 0.0, 1.0,
+      0.0, 1.0, 0.0, 1.0,
+      0.0, 1.0, 0.0, 1.0,
+      0.0, 1.0, 0.0, 1.0,
+
+      // Bottom face
+      0.0, 1.0, 1.0, 1.0,
+      0.0, 1.0, 1.0, 1.0,
+      0.0, 1.0, 1.0, 1.0,
+      0.0, 1.0, 1.0, 1.0,
+      0.0, 1.0, 1.0, 1.0,
+      0.0, 1.0, 1.0, 1.0,
+
+      // Right face
+      0.0, 0.0, 1.0, 1.0,
+      0.0, 0.0, 1.0, 1.0,
+      0.0, 0.0, 1.0, 1.0,
+      0.0, 0.0, 1.0, 1.0,
+      0.0, 0.0, 1.0, 1.0,
+      0.0, 0.0, 1.0, 1.0,
+
+      // Left face
+      1.0, 0.0, 1.0, 1.0,
+      1.0, 0.0, 1.0, 1.0,
+      1.0, 0.0, 1.0, 1.0,
+      1.0, 0.0, 1.0, 1.0,
+      1.0, 0.0, 1.0, 1.0,
+      1.0, 0.0, 1.0, 1.0
+    ];
+
+    // Return WebGL context
+    function getGLContext(id) {
+      var canvas = document.getElementById(id);
+      var gl = canvas.getContext('webgl') ||
+               canvas.getContext('experimental-webgl');
+      return gl;
+    }
+
+    // Initialize shaders
+    function initShaders(gl) {
+      var program = createProgramFromScripts(gl, ['vertex-shader', 'fragment-shader']);
+      gl.useProgram(program);
+      return program;
+    }
+
+    // Initialize buffers
+    function initBuffers(gl, program) {
+      // get location of 'a_position' attrubute
+      var positionLocation = gl.getAttribLocation(program, 'a_position');
+      var colorLocation = gl.getAttribLocation(program, 'a_color');
+
+      // Create vertices buffer
+      var positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, gl.FALSE, 0, 0);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+      // Create color buffer
+      var colorBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+      gl.enableVertexAttribArray(colorLocation);
+      gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, gl.FALSE, 0, 0);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    }
+
+    // Initialize WebGL
+    function initWebGL(gl) {
+      var program = initShaders(gl);
+      initBuffers(gl, program);
+      gl.enable(gl.DEPTH_TEST);
+      return program;
+    }
+
+    // Get WebGL context
+    var gl = getGLContext('canvas');
+    if (!gl)
+      alert('WebGL is not supported by your browser');
+    else { // WebGL is supported
+      var program = initWebGL(gl);
+
+      // Clear context (fill background with yelow color)
+      gl.clearColor(1.0, 1.0, 1.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      var fovY = Math.PI / 6;
+      var aspect = 640 / 480;
+      var zf = 100.0;
+      var zn = 1.0;
+      var f = Math.tan(Math.PI * 0.5 - 0.5 * fovY);
+      var rangeInv = 1.0 / (zn - zf);
+      
+      var pMatrix = [
+      f/aspect, 0, 0,                 0,
+      0,        f, 0,                 0,
+      0,        0, (zf+zn)/(zn-zf),  -1,
+      0,        0, (2*zf*zn/(zn-zf)), 0];
+
+      var cameraPosition = [0.0,0.1,-4.0];
+      var target = [0.0,0.0,0.0];
+      var up = [0.0,1.0,0.0];
+      var camMatrix = makeLookAt(cameraPosition, target, up);
+
+      // translation view perspective
+      // Set transformation matrix
+      var matrix = makeYRotation(Math.PI / 10);
+      matrix = matrixMultiply(matrix, makeXRotation(-Math.PI / 6));
+      matrix = matrixMultiply(matrix, camMatrix);
+      matrix = matrixMultiply(matrix, pMatrix);
+
+      var matrixLocation = gl.getUniformLocation(program, 'u_matrix');
+      gl.uniformMatrix4fv(matrixLocation, gl.FALSE, matrix);
+
+      // Draw triangles
+      var nVertices = vertices.length / 3;
+      var nColors = colors.length / 4;
+      if (nVertices !== nColors) {
+        alert('Number of vertices and colors should match!');
+      } else {
+        gl.drawArrays(gl.TRIANGLES, 0, nVertices);
+      }
+    }
+  </script>
+
+</body>
+</html>
