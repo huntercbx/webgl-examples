@@ -16,9 +16,10 @@
     attribute vec3  a_position;
     varying   vec4  v_color;
     uniform   mat4  u_matrix;
+    uniform   float u_R2;
 
     void main() {
-      float c = (a_position.y + 0.25) * 2.0;
+      float c = (a_position.y + u_R2) / (2.0 * u_R2);
       vec4 color1 = vec4(1.0, 0.0, 0.0, 1.0);
       vec4 color2 = vec4(0.0, 1.0, 0.0, 1.0);
       v_color = c * color1 + (1.0 - c) * color2;
@@ -126,6 +127,9 @@
 
       var matrixLocation = gl.getUniformLocation(program, 'u_matrix');
       gl.uniformMatrix4fv(matrixLocation, gl.FALSE, matrix);
+
+      var radiusLocation = gl.getUniformLocation(program, 'u_R2');
+      gl.uniform1f(radiusLocation, R2);
 
       // Draw triangles
       var nVertices = vertices.length / 3;
