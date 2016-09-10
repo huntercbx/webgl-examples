@@ -105,9 +105,9 @@
       normals.push(0.0, 1.0, 0.0);
       normals.push(0.0, 1.0, 0.0);
 
-      textureCoords.push(i / N, 0.05);
-      textureCoords.push((i + 0.5) / N, 0.0);
-      textureCoords.push((i + 1) / N, 0.05);
+      textureCoords.push(i / N, 0.95);
+      textureCoords.push((i + 0.5) / N, 1.0);
+      textureCoords.push((i + 1) / N, 0.95);
 
       // Bottom face
       vertices.push(x1,  -0.5,  z1);
@@ -118,9 +118,9 @@
       normals.push(0.0, -1.0, 0.0);
       normals.push(0.0, -1.0, 0.0);
 
-      textureCoords.push(i / N, 0.95);
-      textureCoords.push((i + 0.5) / N, 1.0);
-      textureCoords.push((i + 1) / N, 0.95);
+      textureCoords.push(i / N, 0.05);
+      textureCoords.push((i + 0.5) / N, 0.0);
+      textureCoords.push((i + 1) / N, 0.05);
 
       // Side face
       vertices.push(x2, -0.5, z2);
@@ -139,13 +139,13 @@
       normals.push(nx2, 0.0, nz2);
       normals.push(nx2, 0.0, nz2);
 
-      textureCoords.push((i + 1) / N, 0.95);
-      textureCoords.push(i / N, 0.05);
-      textureCoords.push(i / N, 0.95);
-
-      textureCoords.push(i / N, 0.05);
-      textureCoords.push((i + 1) / N, 0.95);
       textureCoords.push((i + 1) / N, 0.05);
+      textureCoords.push(i / N, 0.95);
+      textureCoords.push(i / N, 0.05);
+
+      textureCoords.push(i / N, 0.95);
+      textureCoords.push((i + 1) / N, 0.05);
+      textureCoords.push((i + 1) / N, 0.95);
     }
 
     // Return WebGL context
@@ -262,7 +262,7 @@
       function initTexture() {
         texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, gl.TRUE);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
